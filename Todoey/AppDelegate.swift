@@ -8,6 +8,8 @@
 
 import UIKit
 import CoreData
+//1
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +18,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        
+        //8
+        print(Realm.Configuration.defaultConfiguration.fileURL)
+        
+        //6
+        let data = Data()
+        
+        
+        //2
+        do {
+            let realm = try Realm()
+        } catch {
+            print("Error initializting new realm, \(error)")
+        } //3 make new swift file called Item & Category put it in Data model folder
+        
+        
         // Override point for customization after application launch.
         return true
     }

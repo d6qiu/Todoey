@@ -7,28 +7,32 @@
 //
 
 import UIKit
-import CoreData
+//10
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
 
-    //1
-    var categories = [Category]()
+    //11
+    let realm = try! Realm() //first time creaing realm will fail if no resources
     
-    //2
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    //15
+    var categories: Results<Category>!
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        //9
+        
         loadCategories()
         
     }
     //MARK: - TableView Datasource Methods
     
-    //3
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories.count
     }
-    //4
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         cell.textLabel?.text = categories[indexPath.row].name
@@ -36,10 +40,12 @@ class CategoryViewController: UITableViewController {
     }
     //MARK: - DataManipulation Methods
     
-    //8
-    func saveCategories() {
+    //13
+    func save(category : Category) {
         do{
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
             print("Error saving categories \(error)")
             
@@ -48,32 +54,27 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    //10
+    //14
     func loadCategories() {
-        let request  : NSFetchRequest<Category> = Category.fetchRequest()
-        do {
-            try categories = context.fetch(request)
-        } catch {
-            print("Error Loading categories \(error)")
-        }
-        tableView.reloadData()
+        categories = realm.objects(Category.self) // return all objects of tye Category as Result<Element> type, which is a container type
     }
     //MARK: - Add New Categories
     
-    //5
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         //var textField : UITextField!
         var textField = UITextField()
         let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
-            //7
-            let newCategory = Category(context: self.context)
-            newCategory.name = textField.text
-            self.categories.append(newCategory)
-            self.saveCategories()
+
+            //12
+            let newCategory = Category()
+            newCategory.name = textField.text!
+            //self.categories.append(newCategory)
+            self.save(category: newCategory)
         }
         
-        //6
+        
         alert.addAction(action)
         alert.addTextField { (field) in
             textField = field
@@ -86,20 +87,19 @@ class CategoryViewController: UITableViewController {
     
     //MARK: - TableView Delegate Methods
     
-    //11
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
     }
     
-    //12
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         //dont need to check for segue ideentifier because theres only one
         let destionationVC = segue.destination as! TodoListViewController
         //able to access tableView here because it is included when subclassing tableViewController
         if let indexPath = tableView.indexPathForSelectedRow {
             destionationVC.selectedCategory = categories[indexPath.row]
-            //do 13 in todolistviewController, also delete loadItems in viewDidLoad because you want loadItems coorespond to category selected
-            //14
+            
             destionationVC.loadItems()
         }
         
