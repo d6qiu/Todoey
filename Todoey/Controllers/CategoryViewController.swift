@@ -9,8 +9,11 @@
 import UIKit
 //10
 import RealmSwift
+//35
+import SwipeCellKit
 
-class CategoryViewController: UITableViewController {
+//36 adopt SwipeTableViewCellDelegate protocol, read documentation, about usage!
+class CategoryViewController: UITableViewController{
 
     //11
     let realm = try! Realm() //first time creaing realm will fail if no resources
@@ -35,9 +38,13 @@ class CategoryViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        //37
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
         //18
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categgoriees Added Yet"
+        
+        //38
+        cell.delegate = self
         return cell
     }
     //MARK: - DataManipulation Methods
@@ -107,5 +114,25 @@ class CategoryViewController: UITableViewController {
             destionationVC.loadItems()
         }
         
+    }
+}
+
+//MARK: - Swipe Cell delegate methods
+
+//36 adopt SwipeTableViewCellDelegate protocol, read documentation, about usage!
+extension CategoryViewController: SwipeTableViewCellDelegate {
+    //39
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+        guard orientation == .right else { return nil }
+        
+        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+            // handle action by updating model with deletion
+            print("Item deleted")
+        }
+        
+        // customize the action appearance , download image from example in github of SwipeCellKit, put it in assests folder
+        deleteAction.image = UIImage(named: "delete-icon")
+        
+        return [deleteAction]
     }
 }
