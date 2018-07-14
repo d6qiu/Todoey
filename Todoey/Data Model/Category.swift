@@ -11,7 +11,7 @@ import Foundation
 import RealmSwift
 
 //7
-class Category: Object {
+class Category: Object { //subclass realm object
     @objc dynamic var name : String = ""
     
     //8

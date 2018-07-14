@@ -16,26 +16,28 @@ class CategoryViewController: UITableViewController {
     let realm = try! Realm() //first time creaing realm will fail if no resources
     
     //15
-    var categories: Results<Category>!
+    var categories: Results<Category>? //auto update container like list and array
     
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        loadCategories()
+        //20
+        loadCategories() //initialize categories, the result container which auto updates according to changes in realm
         
     }
     //MARK: - TableView Datasource Methods
     
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        //17
+        return categories?.count ?? 1 //?? is Nil Coalescing ooperator force that when varaible happen to be nil, pick the other value, has to be in this form variable?.something ?? pick this if nil
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        cell.textLabel?.text = categories[indexPath.row].name
+        //18
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categgoriees Added Yet"
         return cell
     }
     //MARK: - DataManipulation Methods
@@ -56,7 +58,7 @@ class CategoryViewController: UITableViewController {
     
     //14
     func loadCategories() {
-        categories = realm.objects(Category.self) // return all objects of tye Category as Result<Element> type, which is a container type
+        categories = realm.objects(Category.self) // return auto update container  Result<Element>, which contains object of the specified type, results will update itself when changes are made that effects the values of results, ie auto update, dont need append this categoories
     }
     //MARK: - Add New Categories
     
@@ -70,7 +72,8 @@ class CategoryViewController: UITableViewController {
             //12
             let newCategory = Category()
             newCategory.name = textField.text!
-            //self.categories.append(newCategory)
+            //16
+            //self.categories.append(newCategory) // dont need append because results is an auto update container, //auto update base on realm, it gets updated whenever u write something in realm
             self.save(category: newCategory)
         }
         
@@ -98,7 +101,8 @@ class CategoryViewController: UITableViewController {
         let destionationVC = segue.destination as! TodoListViewController
         //able to access tableView here because it is included when subclassing tableViewController
         if let indexPath = tableView.indexPathForSelectedRow {
-            destionationVC.selectedCategory = categories[indexPath.row]
+            //19
+            destionationVC.selectedCategory = categories?[indexPath.row]
             
             destionationVC.loadItems()
         }
