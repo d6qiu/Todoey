@@ -9,7 +9,9 @@
 import UIKit
 //21
 import RealmSwift
-class TodoListViewController: UITableViewController {
+import ChameleonFramework
+//47 change superclass to swipetableviewcontroller, also set cell's custom class to swipetableviewcell, modole to swiptcellkit, since swipetableviewcell is from swipecellkit
+class TodoListViewController: SwipeTableViewController {
     
     //21.5
     let realm = try! Realm() //new acces point to realm
@@ -22,24 +24,55 @@ class TodoListViewController: UITableViewController {
             loadItems()
         }
     }
+    //59
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     //create fiel apth to documents folder
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        tableView.separatorStyle = .none
     }
-    
+    //57 navigationController is nil in viewDidLoad //58 nav Bar large title color can be set in navigation controller nav bar
+    override func viewWillAppear(_ animated: Bool) {
+        //60, use guard if 99% wont fail, use let if 50% time will fail, use guard to avoid nested let
+        guard let navBar = navigationController?.navigationBar else { fatalError("navigation controller does not exist") }
+        guard let colorHex = selectedCategory?.color else { fatalError()}
+        title = selectedCategory?.name //title inherited from swipetableviewcontroller, same as tableView
+        guard let navBarColor = UIColor(hexString: colorHex) else {fatalError() }
+        navBar.barTintColor = navBarColor //background color of bar
+        //tint color applys to items inside navigation bar
+        navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+        navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        }
+    //61 triggers when view about to be removed from a view hiaerachy
+    override func viewWillDisappear(_ animated: Bool) {
+        guard let originalColor = UIColor(hexString: "1D9BF6") else { fatalError()}
+        navigationController?.navigationBar.barTintColor = originalColor //navigationcontroller should exist other wise would fail when the view appears
+        navigationController?.navigationBar.tintColor = FlatWhite()
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : FlatWhite()]
+    }
+
+
     
     //MARK - Tableview datasource methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        //let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        //48
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         //26
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
             //Ternary operator ==>
             //value = condition ? valueIfTrue : valueIfFalse
+            //55, darken by percentage returns optional color, //56 navigation bar in nav controller prefer large titles
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) { //you can force unwrap because  todoItems is already nil checked
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
             cell.accessoryType = item.done == true ? .checkmark : .none
         } else {
             cell.textLabel?.text = "No items added" //never trigger because todoItems exists but coount = 0
@@ -96,12 +129,6 @@ class TodoListViewController: UITableViewController {
             }
             //28
             self.tableView.reloadData()
-//            let newItem = Item(context: self.context)
-//            newItem.title = textField.text!
-//            newItem.done = false
-//
-//            newItem.parentCategory = self.selectedCategory
-//            self.itemArray.append(newItem)
 
         }
 
@@ -134,8 +161,20 @@ class TodoListViewController: UITableViewController {
 //        }
         tableView.reloadData()
     }
-
     
+    //49
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            } catch {
+                print("error deleting item, \(error)")
+            }
+        }
+    }
+
 }
 
 //MARK: - Search Bar methods

@@ -9,11 +9,12 @@
 import UIKit
 //10
 import RealmSwift
-//35
-import SwipeCellKit
+//50 read documentaion podfile, pod install
+import ChameleonFramework
 
-//36 adopt SwipeTableViewCellDelegate protocol, read documentation, about usage!
-class CategoryViewController: UITableViewController{
+
+//43 inherit superclass
+class CategoryViewController: SwipeTableViewController{
 
     //11
     let realm = try! Realm() //first time creaing realm will fail if no resources
@@ -27,6 +28,8 @@ class CategoryViewController: UITableViewController{
         super.viewDidLoad()
         //20
         loadCategories() //initialize categories, the result container which auto updates according to changes in realm
+        //52
+        tableView.separatorStyle = .none
         
     }
     //MARK: - TableView Datasource Methods
@@ -38,13 +41,19 @@ class CategoryViewController: UITableViewController{
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        //37
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
-        //18
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categgoriees Added Yet"
+        //44
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        if let category = categories?[indexPath.row] {
+            //18
+            cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categgoriees Added Yet"
+            
+            //54
+            guard let categoryColor  = UIColor(hexString: category.color) else {fatalError()}// remember migration will happen after added new property, will mismatch will previous category objects
+            //62
+            cell.backgroundColor = categoryColor
+            cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
+        }
         
-        //38
-        cell.delegate = self
         return cell
     }
     //MARK: - DataManipulation Methods
@@ -67,9 +76,22 @@ class CategoryViewController: UITableViewController{
     func loadCategories() {
         categories = realm.objects(Category.self) // return auto update container  Result<Element>, which contains object of the specified type, results will update itself when changes are made that effects the values of results, ie auto update, dont need append this categoories
     }
+    //MARK: - Deleta data from swipe
+    override func updateModel(at indexPath: IndexPath) {
+        //41
+        if let categoryForDeletion = self.categories?[indexPath.row] { //everytime variable is optional, perform safty to unwrap it, unless for sure its never nil use !
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("Error deleting category, \(error)")
+            }
+            
+        }
+    }
+    
     //MARK: - Add New Categories
-    
-    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         //var textField : UITextField!
         var textField = UITextField()
@@ -79,6 +101,8 @@ class CategoryViewController: UITableViewController{
             //12
             let newCategory = Category()
             newCategory.name = textField.text!
+            //51
+            newCategory.color  = UIColor.randomFlat.hexValue() //hexvalue return color name as string
             //16
             //self.categories.append(newCategory) // dont need append because results is an auto update container, //auto update base on realm, it gets updated whenever u write something in realm
             self.save(category: newCategory)
@@ -117,22 +141,7 @@ class CategoryViewController: UITableViewController{
     }
 }
 
-//MARK: - Swipe Cell delegate methods
 
-//36 adopt SwipeTableViewCellDelegate protocol, read documentation, about usage!
-extension CategoryViewController: SwipeTableViewCellDelegate {
-    //39
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
-        guard orientation == .right else { return nil }
-        
-        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
-            // handle action by updating model with deletion
-            print("Item deleted")
-        }
-        
-        // customize the action appearance , download image from example in github of SwipeCellKit, put it in assests folder
-        deleteAction.image = UIImage(named: "delete-icon")
-        
-        return [deleteAction]
-    }
-}
+
+
+
