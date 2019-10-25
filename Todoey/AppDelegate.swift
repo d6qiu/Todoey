@@ -20,18 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         //8
         //print(Realm.Configuration.defaultConfiguration.fileURL)
-        
-
-        
         //2
         do {
             _ = try Realm() //replace let realm with underscore because variable realm is never used here
         } catch {
             print("Error initializting new realm, \(error)")
         } //3 make new swift file called Item & Category put it in Data model folder
-        
-        
-        // Override point for customization after application launch.
+    
         return true
     }
 

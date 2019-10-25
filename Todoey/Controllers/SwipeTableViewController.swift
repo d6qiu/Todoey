@@ -39,8 +39,6 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
             // handle action by updating model with deletion
             //46
             self.updateModel(at: indexPath)
-            
-            
         }
         // customize the action appearance , download image from example in github of SwipeCellKit, put it in assests folder
         deleteAction.image = UIImage(named: "delete-icon")

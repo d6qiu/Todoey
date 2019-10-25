@@ -42,7 +42,8 @@ class TodoListViewController: SwipeTableViewController {
         guard let colorHex = selectedCategory?.color else { fatalError()}
         title = selectedCategory?.name //title inherited from swipetableviewcontroller, same as tableView
         guard let navBarColor = UIColor(hexString: colorHex) else {fatalError() }
-        navBar.barTintColor = navBarColor //background color of bar
+        navBar.backgroundColor = navBarColor
+        //navBar.barTintColor = navBarColor //background color of bar
         //tint color applys to items inside navigation bar
         navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
         navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
@@ -51,14 +52,16 @@ class TodoListViewController: SwipeTableViewController {
     override func viewWillDisappear(_ animated: Bool) {
         guard let originalColor = UIColor(hexString: "1D9BF6") else { fatalError()}
         navigationController?.navigationBar.barTintColor = originalColor //navigationcontroller should exist other wise would fail when the view appears
+        navigationController?.navigationBar.backgroundColor = originalColor
+//        guard let statusBar = UIApplication.shared.value(forKeyPath: "statusBarManager.statusBar") as? UIView else { return }
+//        statusBar.backgroundColor = originalColor
         navigationController?.navigationBar.tintColor = FlatWhite()
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : FlatWhite()]
     }
 
 
     
-    //MARK - Tableview datasource methods
-    
+    //MARK: - Tableview datasource methods
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         //48
@@ -87,8 +90,7 @@ class TodoListViewController: SwipeTableViewController {
         return todoItems?.count ?? 1
     }
     
-    //MARK - Tableview delegate methods
-    
+    //MARK: - Tableview delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //29
         if let item = todoItems?[indexPath.row] {
@@ -160,6 +162,7 @@ class TodoListViewController: SwipeTableViewController {
 //            print("Errpr fetching data from context \(error)")
 //        }
         tableView.reloadData()
+        
     }
     
     //49

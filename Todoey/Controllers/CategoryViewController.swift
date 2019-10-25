@@ -37,7 +37,8 @@ class CategoryViewController: SwipeTableViewController{
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         //17
-        return categories?.count ?? 1 //?? is Nil Coalescing ooperator force that when varaible happen to be nil, pick the other value, has to be in this form variable?.something ?? pick this if nil
+        let count = categories?.count ?? 1
+        return count //?? is Nil Coalescing ooperator force that when varaible happen to be nil, pick the other value, has to be in this form variable?.something ?? pick this if nil
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -48,9 +49,11 @@ class CategoryViewController: SwipeTableViewController{
             cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categgoriees Added Yet"
             
             //54
-            guard let categoryColor  = UIColor(hexString: category.color) else {fatalError()}// remember migration will happen after added new property, will mismatch will previous category objects
+            //guard let categoryColor = UIColor(hex: category.color) else {fatalError()}
+            guard let categoryColor  = UIColor(hexString: category.color, withAlpha: 1) else {fatalError()}// remember migration will happen after added new property, will mismatch with previous category objects
             //62
             cell.backgroundColor = categoryColor
+            //cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: categoryColor, isFlat: true)
             cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
         }
         
@@ -102,7 +105,7 @@ class CategoryViewController: SwipeTableViewController{
             let newCategory = Category()
             newCategory.name = textField.text!
             //51
-            newCategory.color  = UIColor.randomFlat.hexValue() //hexvalue return color name as string
+            newCategory.color  = UIColor.randomFlat().hexValue() //hexvalue return color name as string
             //16
             //self.categories.append(newCategory) // dont need append because results is an auto update container, //auto update base on realm, it gets updated whenever u write something in realm
             self.save(category: newCategory)
@@ -135,7 +138,7 @@ class CategoryViewController: SwipeTableViewController{
             //19
             destionationVC.selectedCategory = categories?[indexPath.row]
             
-            destionationVC.loadItems()
+            //destionationVC.loadItems()
         }
         
     }
